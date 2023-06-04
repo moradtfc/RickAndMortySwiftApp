@@ -11,6 +11,7 @@
 | Búsqueda de personajes | Funcionalidad para buscar personajes por su nombre.                     |
 | Tests Unitarios        | Incluye pruebas unitarias para validar el ViewModel principal de la aplicación. |
 
+- Utilizamos el package SDWebImageSwiftUI para las llamadas de las imágenes en las vistas. La librería se encarga de manejar el caché de las imágenes por sí misma.
 - Se desarrolló la aplicación utilizando el patrón de arquitectura MVVM.
 - Se crearon ViewComponents para ser reutilizados y mejorar la calidad del código.
 
