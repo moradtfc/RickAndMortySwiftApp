@@ -1,7 +1,7 @@
 import Foundation
 
 
-struct Character: Codable, Identifiable {
+struct Character: Codable, Identifiable, Equatable {
     let id: Int
     let name: String
     let status: String
@@ -9,7 +9,12 @@ struct Character: Codable, Identifiable {
     let image: String
     let gender: String
     let origin, location: Location
+
+    static func ==(lhs: Character, rhs: Character) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
+
 
 struct Results: Codable {
     let info: Info
