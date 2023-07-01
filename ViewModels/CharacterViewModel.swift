@@ -1,14 +1,15 @@
 import Foundation
 import SwiftUI
+import Combine
 
 class CharacterViewModel: ObservableObject {
     let filters: [Filter]
     @Published var characters: [Character] = []
     @Published var selectedGender: String = ""
     @Published var selectedStatus: String = ""
-    @Published var currentPage = 1
-    @Published var hasMorePages = true
-    
+    @Published var favoriteCharacters: [Character] = []
+    private var cancellables = Set<AnyCancellable>()
+    var nextPageURL: String?
     
     init() {
         filters = [
@@ -16,39 +17,59 @@ class CharacterViewModel: ObservableObject {
             Filter(title: "Status", options: ["", "Alive", "Dead", "Unknown"])
         ]
         loadCharacterData()
+        loadFavoritePlanets()
     }
     
     func loadCharacterData() {
         
-        guard let url = URL(string: "https://rickandmortyapi.com/api/character?page=\(currentPage)") else {
+        guard let url = URL(string: "https://rickandmortyapi.com/api/character") else {
             return
         }
         
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            guard let data = data else { return }
-            
-            do {
-                let results = try JSONDecoder().decode(Results.self, from: data)
-                DispatchQueue.main.async {
-                    self.characters = results.results
-                    self.hasMorePages = results.info.next != nil
+        URLSession.shared.dataTaskPublisher(for: url)
+            .map { $0.data }
+            .decode(type: Results.self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Error: \(error)")
                 }
-            } catch {
-                print("Error decoding JSON: \(error)")
+            } receiveValue: { [weak self] response in
+                self?.characters = response.results
+                self?.nextPageURL = response.info.next
+                self?.loadFavoritePlanets()
             }
-        }.resume()
+            .store(in: &cancellables)
+        
+        
     }
     
     func loadMoreCharacters() {
-        if !hasMorePages {
+        guard let nextPageURL = nextPageURL, let url=URL(string: nextPageURL) else {
             return
         }
         
-        currentPage += 1
-        loadCharacterData()
+        URLSession.shared.dataTaskPublisher(for: url)
+            .map { $0.data }
+            .decode(type: Results.self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Error: \(error)")
+                }
+            } receiveValue: { [weak self] response in
+                self?.characters.append(contentsOf: response.results)
+                self?.nextPageURL = response.info.next
+            }
+            .store(in: &cancellables)
         
     }
-    
     
     func getCircleColor(for status: String) -> Color {
         switch status {
@@ -94,4 +115,35 @@ class CharacterViewModel: ObservableObject {
         }
     }
     
+    func toggleFavorite(character: Character) {
+        if favoriteCharacters.contains(where: { $0.name == character.name }) {
+            favoriteCharacters.removeAll(where: { $0.name == character.name })
+            UserDefaults.standard.set(favoriteCharacters.map { $0.name }, forKey: "FavoriteCharacters")
+            
+        } else {
+            favoriteCharacters.append(character)
+            UserDefaults.standard.set(favoriteCharacters.map { $0.name }, forKey: "FavoriteCharacters")
+            
+        }
+    }
+    
+    func favoriteButtonLabel(for character: Character) -> String {
+        return favoriteCharacters.contains { $0.name == character.name } ? "Remover de Favoritos" : "Agregar a Favoritos"
+    }
+    
+    func backgroundButtonLabel(for character: Character) -> Bool {
+        
+        return favoriteCharacters.contains { $0.name == character.name } ? true : false
+        
+    }
+    
+    func loadFavoritePlanets() {
+        var favoritedCharacterNames = UserDefaults.standard.array(forKey: "FavoriteCharacters") as? [String] ?? []
+        
+        favoriteCharacters = characters.filter { character in
+            favoritedCharacterNames.contains(character.name)
+        }
+    }
+    
 }
+

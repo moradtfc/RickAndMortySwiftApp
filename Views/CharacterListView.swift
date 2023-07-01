@@ -18,8 +18,13 @@ struct CharacterListView: View {
                     ScrollView(.vertical) {
                         LazyVGrid(columns: gridItems, spacing: 20) {
                             ForEach(characterViewModel.filteredCharacters()) { character in
-                                NavigationLink(destination: CharacterDetailView(viewModel: CharacterDetailViewModel(character: character, characterViewModel: characterViewModel))) {
+                                NavigationLink(destination: CharacterDetailView(viewModelCharacter: characterViewModel, viewModel: CharacterDetailViewModel(character: character, characterViewModel: characterViewModel), character: character)) {
                                     CharacterCellViewComponent(character: character)
+                                }
+                                .onAppear(){
+                                    if characterViewModel.characters.last == character {
+                                        characterViewModel.loadMoreCharacters()
+                                    }
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -27,25 +32,6 @@ struct CharacterListView: View {
                         .padding(.vertical, 40)
                         .padding(.horizontal,20)
                         
-                        HStack {
-                            
-                            if characterViewModel.hasMorePages {
-                                Spacer()
-                                Button(action: {
-                                    characterViewModel.loadMoreCharacters()
-                                }) {
-                                    Text("Load More")
-                                        .foregroundColor(.black)
-                                        .padding()
-                                        .background(.orange)
-                                        .cornerRadius(5)
-                                        .fontWeight(.bold)
-                                }
-                                Spacer()
-                            }
-                        }
-                        .padding(.vertical, 20)
-                        .frame(maxWidth: .infinity)
                     }
                 }
             }
@@ -77,4 +63,3 @@ struct CharacterListView_Previews: PreviewProvider {
         CharacterListView()
     }
 }
-

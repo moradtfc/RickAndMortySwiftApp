@@ -11,7 +11,7 @@ struct CharacterSearchView: View {
                     .padding(.horizontal)
                 
                 List(characterViewModel.filteredCharactersName(for: searchText)) { character in
-                    NavigationLink(destination: CharacterDetailView(viewModel: CharacterDetailViewModel(character: character, characterViewModel: characterViewModel))) {
+                    NavigationLink(destination: CharacterDetailView(viewModelCharacter: characterViewModel, viewModel: CharacterDetailViewModel(character: character, characterViewModel: characterViewModel), character: character)) {
                         Text(character.name)
                     }
                 }
