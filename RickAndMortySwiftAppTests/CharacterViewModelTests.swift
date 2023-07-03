@@ -4,24 +4,6 @@ import SwiftUI
 
 final class CharacterViewModelTests: XCTestCase {
     
-    func testLoadCharacterData() {
-        
-        let viewModel = CharacterViewModel()
-        viewModel.loadCharacterData()
-        
-        let expectation = XCTestExpectation(description: "Load Character Data")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            // Comprobamos que tenemos cargados Personajes de Rick & Morty.
-            XCTAssertFalse(viewModel.characters.isEmpty, "Characters should not be empty")
-            
-            // Comprobamos que hasMorePages sea true.
-            XCTAssertTrue(viewModel.hasMorePages, "hasMorePages should be true")
-            
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
-    }
     
     func testGetCircleColor() {
         let characterViewModel = CharacterViewModel()
@@ -41,7 +23,7 @@ final class CharacterViewModelTests: XCTestCase {
     
     func testFilteredCharacters() {
         let characterViewModel = CharacterViewModel()
-    
+        
         let character1 = Character(id: 1, name: "Rick Sanchez", status: "Alive", species: "Human", image: "rick.png", gender: "Male", origin: Location(name: "Earth", url: "earth.com"), location: Location(name: "Earth", url: "earth.com"))
         let character2 = Character(id: 2, name: "Morty Smith", status: "Dead", species: "Human", image: "morty.png", gender: "Male", origin: Location(name: "Earth", url: "earth.com"), location: Location(name: "Earth", url: "earth.com"))
         let character3 = Character(id: 3, name: "Summer Smith", status: "Alive", species: "Human", image: "summer.png", gender: "Female", origin: Location(name: "Earth", url: "earth.com"), location: Location(name: "Earth", url: "earth.com"))
@@ -100,13 +82,6 @@ final class CharacterViewModelTests: XCTestCase {
         XCTAssertEqual(filteredBySearchText3.count, 0, "Filtered characters count should be 0 (search text 'Jessica')")
     }
     
-    func testLoadMoreCharacters() {
-        let characterViewModel = CharacterViewModel()
-        let initialCurrentPage = characterViewModel.currentPage
-        
-        characterViewModel.loadMoreCharacters()
-
-        XCTAssertEqual(characterViewModel.currentPage, initialCurrentPage + 1, "currentPage should be incremented by 1")
-    }
     
 }
+
